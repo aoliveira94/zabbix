@@ -28,24 +28,24 @@ spec:
             - name: DB_SERVER_PORT
               valueFrom:
                 secretKeyRef:
-                  name: sql-mw-monitoring
+                  name: sql-monitoring
                   key: DB_PORT
             - name: DB_SERVER_HOST
               valueFrom:
                 secretKeyRef:
-                  name: sql-mw-monitoring
+                  name: sql-monitoring
                   key: DB_HOST
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: sql-mw-monitoring
+                  name: sql-monitoring
                   key: DB_USER
             - name: POSTGRES_DB
               value: "zabbix"
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: sql-mw-monitoring
+                  name: sql-monitoring
                   key: DB_PASSWORD
             - name: ZBX_SERVER_PORT
               value: "10051"
