@@ -1,0 +1,25 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: zabbix
+  namespace: zabbix
+spec:
+  domains:
+    - yourhost(dns)
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: zabbix
+  namespace: zabbix
+  annotations:
+    networking.gke.io/managed-certificates: "my-zabbix"
+    networking.gke.io/v1beta1.FrontendConfig: "http-redirect-https"
+spec:
+  rules:
+    - host: yourhost(dns)
+      http:
+        paths:
+          - backend:
+              serviceName: web
+              servicePort: 8080

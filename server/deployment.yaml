@@ -1,0 +1,87 @@
+# To allow multiple connections to the bank, it is necessary to enable the configuration of the bank "max_replication_slots" above 10
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server
+  namespace: "zabbix"
+  labels:
+    app: server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: server
+          image: zabbix/zabbix-server-pgsql:alpine-6.2-latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 10051
+          env:
+            - name: DB_SERVER_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: sql-monitoring
+                  key: DB_HOST
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: sql-monitoring
+                  key: DB_USER
+            - name: POSTGRES_DB
+              value: "zabbix"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sql-monitoring
+                  key: DB_PASSWORD
+            - name: DB_SERVER_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: sql-monitoring
+                  key: DB_PORT
+            - name: ZBX_IPMIPOLLERS
+              value: "3"
+            - name: ZBX_DEBUGLEVEL
+              value: "3"
+            - name: ZBX_HOUSEKEEPINGFREQUENCY
+              value: "1"
+            - name: ZBX_MAXHOUSEKEEPERDELETE
+              value: "50000"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "250Mi"
+            limits:
+              cpu: "150m"
+              memory: "500Mi"
+          livenessProbe:
+            initialDelaySeconds: 30
+            failureThreshold: 3
+            successThreshold: 1
+            periodSeconds: 10
+            tcpSocket:
+              port: 10051
+          readinessProbe:
+            initialDelaySeconds: 30
+            failureThreshold: 3
+            successThreshold: 1
+            periodSeconds: 10
+            tcpSocket:
+              port: 10051
+          volumeMounts:
+            - name: scripts-alerts
+              mountPath: /usr/lib/zabbix/alertscripts
+      volumes:
+        - name: scripts-alerts
+          persistentVolumeClaim:
+            claimName: scripts-alerts
+      imagePullSecrets:
+        - name: xxxxxxxxxxx

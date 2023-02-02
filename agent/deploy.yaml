@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent
+  namespace: "zabbix"
+  labels:
+    app: agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent
+  template:
+    metadata:
+      labels:
+        app: agent
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: agent
+          image: zabbix/zabbix-agent:alpine-6.2-latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 10050
+          env:
+            - name: ZBX_HOSTNAME
+              value: "Zabbix server"
+            - name: ZBX_SERVER_HOST
+              value: "server"
+            - name: ZBX_SERVER_PORT
+              value: "10051"
+            - name: ZBX_DEBUGLEVEL
+              value: "3"
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "25Mi"
+            limits:
+              cpu: "25m"
+              memory: "50Mi"
+          livenessProbe:
+            initialDelaySeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+            periodSeconds: 10
+            tcpSocket:
+              port: 10050
+          readinessProbe:
+            initialDelaySeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+            periodSeconds: 10
+            tcpSocket:
+              port: 10050

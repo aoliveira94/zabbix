@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: "zabbix"
+  labels:
+    app: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: web
+          image: zabbix/zabbix-web-nginx-pgsql:alpine-6.2-latest
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: ZBX_SERVER_HOST
+              value: "server"
+            - name: DB_SERVER_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: sql-mw-monitoring
+                  key: DB_PORT
+            - name: DB_SERVER_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: sql-mw-monitoring
+                  key: DB_HOST
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: sql-mw-monitoring
+                  key: DB_USER
+            - name: POSTGRES_DB
+              value: "zabbix"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sql-mw-monitoring
+                  key: DB_PASSWORD
+            - name: ZBX_SERVER_PORT
+              value: "10051"
+            - name: PHP_TZ
+              value: "America/Sao_Paulo"
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "250Mi"
+            limits:
+              cpu: "1000m"
+              memory: "500Mi"
+          livenessProbe:
+            initialDelaySeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+            periodSeconds: 10
+            httpGet:
+              path: /
+              port: 8080
+          readinessProbe:
+            initialDelaySeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+            periodSeconds: 10
+            httpGet:
+              path: /
+              port: 8080

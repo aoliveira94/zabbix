@@ -1,0 +1,13 @@
+# Uncomment to delete disk or creating, not retain policy
+
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: scripts-alerts
+#   namespace: zabbix
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 2Gi
